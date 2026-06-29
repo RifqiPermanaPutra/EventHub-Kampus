@@ -26,12 +26,13 @@ const COLLECTION_NAME = 'events';
 export const eventService = {
   async getAllEvents(status?: EventStatus) {
     try {
-      let q = query(collection(db, COLLECTION_NAME), orderBy('date', 'asc'));
+      let q = query(collection(db, COLLECTION_NAME));
       if (status) {
         q = query(q, where('status', '==', status));
       }
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
+      const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
+      return events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
       return [];
@@ -87,11 +88,11 @@ export const eventService = {
     try {
       const q = query(
         collection(db, COLLECTION_NAME), 
-        where('organizerId', '==', organizerId),
-        orderBy('createdAt', 'desc')
+        where('organizerId', '==', organizerId)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
+      const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
+      return events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
       return [];
