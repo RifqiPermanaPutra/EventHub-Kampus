@@ -58,8 +58,7 @@ service cloud.firestore {
                       (incoming().role == 'mahasiswa' || incoming().role == 'panitia' || incoming().role == 'admin') &&
                       incoming().keys().hasAll(['uid', 'name', 'email', 'role', 'createdAt']) &&
                       incoming().uid == userId;
-      allow update: if isOwner(userId) && 
-                      incoming().diff(existing()).affectedKeys().hasOnly(['name']) || isAdmin();
+      allow update: if (isOwner(userId) && incoming().role != 'admin') || isAdmin();
     }
 
     // Event Rules
